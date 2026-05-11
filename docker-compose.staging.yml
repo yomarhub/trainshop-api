@@ -6,7 +6,7 @@ services:
     image: yomarhub/trainshop-frontend:latest
     container_name: trainshop_frontend
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - api
     restart: unless-stopped
@@ -18,9 +18,9 @@ services:
     image: yomarhub/trainshop-api:latest
     container_name: trainshop_api
     env_file:
-      - .env
+      - .env.staging
     ports:
-      - "3000:3000"
+      - "3001:3000"
     depends_on:
       db:
         condition: service_healthy
@@ -30,7 +30,7 @@ services:
     image: postgres:16-alpine
     container_name: trainshop_db
     env_file:
-      - .env
+      - .env.staging
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./database/init:/docker-entrypoint-initdb.d:ro
@@ -42,4 +42,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  db_data:
+  staging_db_data:
