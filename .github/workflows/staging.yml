@@ -61,8 +61,7 @@ jobs:
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_API }}
           tags: |
-            type=raw,value=latest
-            type=raw,value=staging
+            type=raw,value=staging-latest
             type=sha,prefix=staging-sha-
             type=ref,event=branch
 
