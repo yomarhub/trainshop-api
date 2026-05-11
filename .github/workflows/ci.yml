@@ -10,6 +10,7 @@ on:
 env:
   IMAGE_NAME_API: trainshop-api
   IMAGE_NAME_FRONTEND: trainshop-frontend
+  DATABASE_URL: postgres://trainshop:trainshop_password@db:5432/trainshop
 
 jobs:
   quality:
@@ -43,8 +44,10 @@ jobs:
     services:
       db:
         image: postgres:16-alpine
-        env_file:
-          - .env
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: trainshop_test
         volumes:
           - ./database/init:/docker-entrypoint-initdb.d:ro
         healthcheck:
