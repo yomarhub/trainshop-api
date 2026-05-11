@@ -13,6 +13,11 @@ env:
 jobs:
   quality:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: api
+
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v4
@@ -63,8 +68,8 @@ jobs:
           context: ./api
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}-api
+          tags: ${{ steps.meta.outputs.tags }}-api
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -74,7 +79,7 @@ jobs:
           context: ./frontend
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}-frontend
+          tags: ${{ steps.meta.outputs.tags }}-frontend
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
