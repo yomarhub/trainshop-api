@@ -20,8 +20,7 @@ jobs:
       - name: Installer Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: "20"
 
       - name: Installer les dépendances
         run: npm ci
@@ -58,13 +57,24 @@ jobs:
             type=sha,prefix=sha-
             type=ref,event=branch
 
-      - name: Build and push
+      - name: Build and push api
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./api
           file: ./Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: ${{ steps.meta.outputs.labels }}-api
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}-frontend
           cache-from: type=gha
           cache-to: type=gha,mode=max
