@@ -126,11 +126,11 @@ jobs:
         run: |
           docker run -d \
             --name healthcheck-api \
-            -e DATABASE_URL="${{ env.DATABASE_URL }}" \
+            --network host \
+            -e DATABASE_URL="postgres://postgres:postgres@localhost:5432/trainshop_test" \
             -e VERSION="ci-${{ github.sha }}" \
             -e ENVIRONMENT="ci" \
             -e API_PORT=3000 \
-            -p 3000:3000 \
             ${{ secrets.DOCKERHUB_USERNAME }}/trainshop-api:latest
 
       - name: Wait for API startup
