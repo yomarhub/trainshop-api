@@ -50,16 +50,6 @@ jobs:
           POSTGRES_DB: trainshop_test
         volumes:
           - ./database/init:/docker-entrypoint-initdb.d:ro
-        healthcheck:
-          test:
-            [
-              "CMD-SHELL",
-              "pg_isready -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }}",
-            ]
-          interval: 10s
-          timeout: 5s
-          retries: 5
-        restart: unless-stopped
       # db:
       #   image: postgres:16-alpine
       #   env:
