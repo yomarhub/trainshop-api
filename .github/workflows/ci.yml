@@ -130,7 +130,7 @@ jobs:
         run: |
           docker run -d \
             --name healthcheck-api \
-            -e DATABASE_URL="postgres://postgres:postgres@localhost:5432/trainshop_test" \
+            -e DATABASE_URL="$${DATABASE_URL}" \
             -e VERSION="ci-${{ github.sha }}" \
             -e ENVIRONMENT="ci" \
             -e API_PORT=3000 \
