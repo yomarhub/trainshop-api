@@ -43,17 +43,31 @@ jobs:
     services:
       db:
         image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: trainshop_test
-        options: >-
-          --health-cmd "pg_isready -U postgres -d trainshop_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+        env_file:
+          - .env
+        volumes:
+          - db_data:/var/lib/postgresql/data
+          - ./database/init:/docker-entrypoint-initdb.d:ro
+        healthcheck:
+          test:
+            ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+        restart: unless-stopped
+      # db:
+      #   image: postgres:16-alpine
+      #   env:
+      #     POSTGRES_USER: postgres
+      #     POSTGRES_PASSWORD: postgres
+      #     POSTGRES_DB: trainshop_test
+      #   options: >-
+      #     --health-cmd "pg_isready -U postgres -d trainshop_test"
+      #     --health-interval 10s
+      #     --health-timeout 5s
+      #     --health-retries 5
+      #   ports:
+      #     - 5432:5432
 
     steps:
       - name: Checkout
