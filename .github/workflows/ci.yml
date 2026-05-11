@@ -40,6 +40,21 @@ jobs:
   docker:
     runs-on: ubuntu-latest
 
+    services:
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: trainshop_test
+        options: >-
+          --health-cmd pg_isready -U postgres -d trainshop_test
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -94,3 +109,76 @@ jobs:
           labels: ${{ steps.meta-frontend.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Pull API image for healthcheck
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/trainshop-api:latest
+
+      - name: Start API container for healthcheck
+        run: |
+          docker run -d \
+            --name healthcheck-api \
+            -e DATABASE_URL="postgres://postgres:postgres@localhost:5432/trainshop_test" \
+            -e VERSION="ci-${{ github.sha }}" \
+            -e ENVIRONMENT="ci" \
+            -e API_PORT=3000 \
+            -p 3000:3000 \
+            ${{ secrets.DOCKERHUB_USERNAME }}/trainshop-api:latest
+
+      - name: Wait for API startup
+        run: sleep 3
+
+      - name: Test /health endpoint
+        id: health
+        run: |
+          echo "🔍 Testing /health endpoint..."
+          for i in {1..10}; do
+            echo "Attempt $i/10..."
+            HTTP_CODE=$(curl -s -o /tmp/health.json -w "%{http_code}" http://localhost:3000/health)
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ /health: HTTP 200 OK"
+              cat /tmp/health.json | jq .
+              break
+            else
+              echo "⏳ /health: HTTP $HTTP_CODE"
+              sleep 1
+            fi
+            if [ $i -eq 10 ]; then
+              echo "❌ /health failed after 10 attempts"
+              exit 1
+            fi
+          done
+
+      - name: Test /ready endpoint
+        id: ready
+        run: |
+          echo "🔍 Testing /ready endpoint..."
+          HTTP_CODE=$(curl -s -o /tmp/ready.json -w "%{http_code}" http://localhost:3000/ready)
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ /ready: HTTP 200 OK"
+            cat /tmp/ready.json | jq .
+          else
+            echo "⚠️ /ready: HTTP $HTTP_CODE"
+            cat /tmp/ready.json | jq .
+            exit 1
+          fi
+
+      - name: Collect diagnostic logs (on failure)
+        if: failure()
+        run: |
+          echo "=== Container Status ==="
+          docker ps -a --filter "name=healthcheck-api"
+
+          echo "=== Container Logs ==="
+          docker logs healthcheck-api || true
+
+          echo "=== Health Check Response ==="
+          cat /tmp/health.json 2>/dev/null || echo "No health response"
+
+          echo "=== Ready Check Response ==="
+          cat /tmp/ready.json 2>/dev/null || echo "No ready response"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker rm -f healthcheck-api || true
+          docker stop healthcheck-api || true
