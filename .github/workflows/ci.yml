@@ -46,7 +46,6 @@ jobs:
         env_file:
           - .env
         volumes:
-          - db_data:/var/lib/postgresql/data
           - ./database/init:/docker-entrypoint-initdb.d:ro
         healthcheck:
           test:
