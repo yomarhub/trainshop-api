@@ -52,7 +52,10 @@ jobs:
           - ./database/init:/docker-entrypoint-initdb.d:ro
         healthcheck:
           test:
-            ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+            [
+              "CMD-SHELL",
+              "pg_isready -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }}",
+            ]
           interval: 10s
           timeout: 5s
           retries: 5
@@ -133,7 +136,7 @@ jobs:
         run: |
           docker run -d \
             --name healthcheck-api \
-            -e DATABASE_URL="$${DATABASE_URL}" \
+            -e DATABASE_URL="${{ env.DATABASE_URL }}" \
             -e VERSION="ci-${{ github.sha }}" \
             -e ENVIRONMENT="ci" \
             -e API_PORT=3000 \
