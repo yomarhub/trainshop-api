@@ -8,7 +8,6 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "20"
   IMAGE_NAME: trainshop-api
 
 jobs:
@@ -21,7 +20,7 @@ jobs:
       - name: Installer Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 20
           cache: npm
 
       - name: Installer les dépendances
