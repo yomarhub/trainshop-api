@@ -6,6 +6,10 @@ jest.mock('../src/db', () => ({
   query: jest.fn().mockResolvedValue({ rows: [{ ok: 1 }] })
 }));
 
+beforeAll(() => {
+  process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/trainshop_test';
+});
+
 describe('GET /health', () => {
   it('should return alive status with no dependencies check', async () => {
     const response = await request(app).get('/health');
