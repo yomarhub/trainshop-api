@@ -9,6 +9,7 @@ const db = require("./db");
 
 // On crée l'application Express.
 const app = express();
+const apiRouter = express.Router();
 
 // Ce middleware permet à Express de lire le JSON envoyé dans les requêtes.
 app.use(express.json());
@@ -17,26 +18,27 @@ app.use(express.json());
 app.use(requestLogger);
 
 // Route de santé simple : elle dit seulement que l'API répond.
-app.get("/health", (req, res) => {
+apiRouter.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
-    service: "trainshop-api"
+    service: "trainshop-api",
+    instance: process.env.INSTANCE_NAME
   });
 });
 
 // Route de disponibilité : elle vérifie aussi la dépendance base de données.
-app.get("/ready", async (req, res) => {
+apiRouter.get("/ready", async (req, res) => {
   const databaseIsReady = await db.isReady();
 
   if (!databaseIsReady) {
-    return res.status(503).json({ status: "not_ready", database: "disconnected", instance: process.env.INSTANCE_NAME });
+    return res.status(503).json({ status: "not_ready", database: "disconnected" });
   }
 
-  res.status(200).json({ status: "ready", database: "connected", instance: process.env.INSTANCE_NAME });
+  res.status(200).json({ status: "ready", database: "connected" });
 });
 
 // Route métier : récupération du catalogue.
-app.get("/products", async (req, res) => {
+apiRouter.get("/products", async (req, res) => {
   try {
     const products = await db.getProducts();
     res.status(200).json(products);
@@ -46,7 +48,7 @@ app.get("/products", async (req, res) => {
 });
 
 // Route métier : création d'une commande.
-app.post("/orders", async (req, res) => {
+apiRouter.post("/orders", async (req, res) => {
   const { product_id, quantity } = req.body;
 
   // Validation simple : le produit est obligatoire.
@@ -63,5 +65,6 @@ app.post("/orders", async (req, res) => {
   res.status(201).json({ status: "created", order });
 });
 
+app.use(apiRouter);
 // On exporte app pour pouvoir le tester avec Supertest.
 module.exports = app;
