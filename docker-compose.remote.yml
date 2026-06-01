@@ -1,9 +1,9 @@
 services:
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    # image: yomarhub/trainshop-frontend:latest
+    # build:
+    #   context: ./frontend
+    #   dockerfile: Dockerfile
+    image: yomarhub/trainshop-frontend:latest
     container_name: trainshop_frontend
     ports:
       - "80:80"
@@ -12,17 +12,15 @@ services:
     restart: unless-stopped
 
   api:
-    build:
-      context: ./api
-      dockerfile: Dockerfile
-    # image: yomarhub/trainshop-api:latest
+    # build:
+    #   context: ./api
+    #   dockerfile: Dockerfile
+    image: yomarhub/trainshop-api:latest
     container_name: trainshop_api
     env_file:
       - .env
     ports:
       - "3000:3000"
-    volumes:
-      - ./logs/api:/app/logs
     depends_on:
       db:
         condition: service_healthy
